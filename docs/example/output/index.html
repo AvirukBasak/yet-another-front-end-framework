@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script type="module">
+        import Parent from './TestParent.js';
+        const app = document.getElementById('app');
+        if (app) {
+            const parent = new Parent({});
+            for (const el of parent.elements) {
+                app.appendChild(el);
+            }
+            parent.onMount();
+        }
+    </script>
+</body>
+
+</html>
