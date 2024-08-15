@@ -1,0 +1,2 @@
+prop1 = val1
+prop1.a.b.c = val2
