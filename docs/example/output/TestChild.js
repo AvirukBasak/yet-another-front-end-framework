@@ -8,84 +8,68 @@ export default class Child {
     /**
      * @type {{[key: string]: State}}
      */
-    props;
+    props = {};
 
     /**
-     * @type {Map<string, State>}
+     * @type {{[key: string]: State}}
      */
-    states;
+    states = {};
 
     /**
+     * Contains the top level elements of the component.
      * @type {Array<Element>}
      */
-    elements;
+    elements = new Array();
 
     /**
      * Contains child components that are mounted to the DOM.
      * @type {Set<IComponent>}
      */
-    children;
+    children = new Set();
 
     /**
      * @param {{[key: string]: State}} props
      */
     constructor(props) {
-        const _context_ = this;
-
         // sectio 1: member init
-        _context_.props = props;
-        _context_.states = new Map();
-        _context_.elements = new Array();
-        _context_.children = new Set();
+        this.props = props;
 
         // section 2: states init: done here to avoid undefined states during content init
-        _context_.states.set(
-            'name',
-            _context_.props.name.clone(function (val) {
-                const state = _context_.states.get('name');
-                if (!state) return;
-                // update state
-                state.value = val;
-                // for every dependent element, update respective attribute or content
-                const target1 = document.getElementById('Child.div1.font1');
-                if (target1) {
-                    target1.textContent = `Hello, ${state.value}!`;
-                }
-                // const target2 = document.getElementById("Child.div1.font2");
-            })
-        );
+        this.states.name = this.props.name.clone((val) => {
+            let target;
+            this.states.name.value = val;
+            // for every dependent element, update respective attribute or content
+            if ((target = document.getElementById('Child.div1.font1'))) {
+                target.textContent = `Hello, ${this.states.name.value}!`;
+            }
+        });
 
-        _context_.states.set(
-            'age',
-            new State(0, function (val) {
-                const state = _context_.states.get('age');
-                if (!state) return;
-                // update state
-                state.value = val;
-                // for every dependent element, update respective attribute or content
-                const target1 = document.getElementById('Child.div1.font2');
-                if (target1) {
-                    target1.textContent = `Age: ${state.value}`;
-                }
-                // const target2 = document.getElementById("Child.div1.font2");
-            })
-        );
+        this.states.age = new State(0, (val) => {
+            let target;
+            this.states.age.value = val;
+            // for every dependent element, update respective attribute or content
+            if ((target = document.getElementById('Child.div1.font2'))) {
+                target.textContent = `Age: ${this.states.age.value}`;
+            }
+        });
 
         // section 3: elements init: done here to avoid undefined elements during content init
         const root = document.createElement('div');
         {
-            // get state values to be used in the content
-            const name = _context_.states.get('name')?.value;
-            const age = _context_.states.get('age')?.value;
-
             // convert refs into element IDs
             const b1 = 'Child.b1';
             const b2 = 'Child.b2';
             const b3 = 'Child.b3';
 
             root.innerHTML = `
-                <font id="Child.div1.font1" attr1="value1" attr2="value2">Hello, ${name}!</font><br/>
-                <font id="Child.div1.font2" attr5="value5" attr6="value6">Age: ${age}</font><br/>
+                <style>
+                   font.Child {
+                       color: red;
+                   }
+                </style>
+                <font class="Child" id="Child.div1.font1" attr1="value1" attr2="value2">Hello, ${this.states.name.value}!</font><br/>
+                <font class="Child" id="Child.div1.font2" attr5="value5" attr6="value6">Age: ${this.states.age.value}</font><br/>
+                ${this.props.child.value}<br/>
                 <button id=${b1}>Change Name</button>
                 <button id=${b2}>Change Age</button>
                 <button id=${b3}>Change Both</button>
@@ -94,15 +78,13 @@ export default class Child {
 
         // section 4: elements added to the elements array
         for (const node of root.children) {
-            _context_.elements.push(node);
+            this.elements.push(node);
         }
     }
 
     getHTML() {
-        const _context_ = this;
-
         let html = '';
-        for (const element of _context_.elements) {
+        for (const element of this.elements) {
             html += element.outerHTML;
         }
         return html;
@@ -111,87 +93,64 @@ export default class Child {
     /**
      * Add the child to the children set. Used during onMount and onUnmount.
      * @param {IComponent} child
+     * @returns {IComponent}
      */
     addChild(child) {
-        const _context_ = this;
-
-        _context_.children.add(child);
+        this.children.add(child);
+        return child;
     }
 
     onMount() {
-        const _context_ = this;
+        // section 1: state and ref init
+        const name = this.states.name;
+        const age = this.states.age;
 
-        // section 1: refs init
-        const b1 = document.getElementById('Child.b1');
-        const b2 = document.getElementById('Child.b2');
-        const b3 = document.getElementById('Child.b3');
+        const b1 = document.getElementById('Child.b1') || IComponent.dummyElement;
+        const b2 = document.getElementById('Child.b2') || IComponent.dummyElement;
+        const b3 = document.getElementById('Child.b3') || IComponent.dummyElement;
 
         // section 2: all of user defined code
-        {
-            function changeName() {
-                {
-                    // get value from state into temporary variable
-                    let val = _context_.states.get('name')?.value;
-                    if (val) {
-                        // update temporary variable according to user defined logic
-                        val = 'Alice';
-                        // update state from temporary variable
-                        _context_.states.get('name')?.change(val);
-                    }
-                }
-            }
-
-            function changeAge() {
-                {
-                    let val = _context_.states.get('age')?.value;
-                    if (val !== undefined) {
-                        val += 1;
-                        _context_.states.get('age')?.change(val);
-                    }
-                }
-            }
-
-            function changeBoth() {
-                {
-                    let val = _context_.states.get('name')?.value;
-                    if (val !== undefined) {
-                        val = 'Alice';
-                        _context_.states.get('name')?.change(val);
-                    }
-                }
-                {
-                    let val = _context_.states.get('age')?.value;
-                    if (val !== undefined) {
-                        val += 1;
-                        _context_.states.get('age')?.change(val);
-                    }
-                }
-            }
-
-            b1?.addEventListener('click', changeName);
-            b2?.addEventListener('click', changeAge);
-            b3?.addEventListener('click', changeBoth);
+        function changeName() {
+            // get value from state into temporary variable
+            name.value = 'Alice';
+            name.change(name.value);
         }
 
+        function changeAge() {
+            // get value from state into temporary variable
+            age.value += 1;
+            age.change(age.value);
+        }
+
+        function changeBoth() {
+            // get value from state into temporary variable
+            name.value = 'Alice';
+            name.change(name.value);
+
+            // get value from state into temporary variable
+            age.value += 1;
+            age.change(age.value);
+        }
+
+        b1.addEventListener('click', changeName);
+        b2.addEventListener('click', changeAge);
+        b3.addEventListener('click', changeBoth);
+
         // section 3: call onMount for all children
-        for (const child of _context_.children) {
+        for (const child of this.children) {
             child.onMount();
         }
     }
 
     onUnmount() {
-        const _context_ = this;
-
         // remove event listeners by cloning the node
-        for (let i = 0; i < _context_.elements.length; i++) {
-            const node = _context_.elements[i].cloneNode(true);
-            _context_.elements[i].replaceWith(node);
+        for (let i = 0; i < this.elements.length; i++) {
+            const node = this.elements[i].cloneNode(true);
+            this.elements[i].replaceWith(node);
         }
-
-        for (const child of _context_.children) {
+        // call onUnmount for all children
+        for (const child of this.children) {
             child.onUnmount();
         }
     }
-
-    // user defined functions
 }

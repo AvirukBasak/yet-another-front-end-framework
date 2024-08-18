@@ -7,33 +7,35 @@ export default class IComponent {
     /**
      * @type {{[key: string]: State}}
      */
-    props;
+    props = {};
 
     /**
-     * @type {Map<string, State>}
+     * @type {{[key: string]: State}}
      */
-    states;
+    states = {};
 
     /**
      * Contains the top level elements of the component.
      * @type {Array<Element>}
      */
-    elements;
+    elements = new Array();
 
     /**
      * Contains child components that are mounted to the DOM.
      * @type {Set<IComponent>}
      */
-    children;
+    children = new Set();
+
+    /**
+     * @type {Node | Element | HTMLElement}
+     */
+    static dummyElement = document.createElement('div');
 
     /**
      * @param {Object?} props
      */
     constructor(props) {
         this.props = props;
-        this.states = new Map();
-        this.elements = new Array();
-        this.children = new Set();
     }
 
     /**

@@ -11,6 +11,7 @@
         const app = document.getElementById('app');
         if (app) {
             const parent = new Parent({});
+            // mount the parent to the app
             for (const el of parent.elements) {
                 app.appendChild(el);
             }

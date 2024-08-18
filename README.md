@@ -99,7 +99,7 @@ Topics covered:
 
 ```html
 <script>
-  const b1 = Y0.ref();
+  const { b1 } = Y0.ref();
 
   function handleClick() {
     alert('Hello, world!');
@@ -136,7 +136,7 @@ Topics covered:
      and automatically rewrites the correct code which sets each ref
      object to their corresponding element
      This is what I meant by "compilation magic" */
-  const {b1, b2} = Y0.ref();
+  const { b1, b2 } = Y0.ref();
 
   function increment() {
     count += 1;
@@ -185,7 +185,7 @@ Topics covered:
 **Child.html**:
 ```html
 <script>
-  const {hide, toggle} = Y0.props();
+  const { hide, toggle } = Y0.props();
 </script>
 
 #if (hide)
@@ -222,7 +222,7 @@ Topics covered:
 **Child.html**:
 ```html
 <script>
-  const child = Y0.props();
+  const { child } = Y0.props();
 </script>
 
 <div>

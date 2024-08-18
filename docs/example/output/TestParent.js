@@ -9,71 +9,71 @@ export default class Parent {
     /**
      * @type {{[key: string]: State}}
      */
-    props;
+    props = {};
 
     /**
-     * @type {Map<string, State>}
+     * @type {{[key: string]: State}}
      */
-    states;
+    states = {};
 
     /**
      * Contains the top level elements of the component.
      * @type {Array<Element>}
      */
-    elements;
+    elements = new Array();
 
     /**
      * Contains child components that are mounted to the DOM.
      * @type {Set<IComponent>}
      */
-    children;
+    children = new Set();
 
     /**
      * @param {{[key: string]: State}} props
      */
     constructor(props) {
-        const _context_ = this;
-
         // sectio 1: member init
-        _context_.props = props;
-        _context_.states = new Map();
-        _context_.elements = new Array();
-        _context_.children = new Set();
+        this.props = props;
 
         // section 2: states init: done here to avoid undefined states during content init
-        _context_.states.set(
-            'name',
-            new State('World', function (val) {
-                const state = _context_.states.get('name');
-                if (!state) return;
-                // update state
-                state.value = val;
-                // for every dependent element, update respective attribute or content
-                const target1 = document.getElementById(
-                    'Parent.div1.div2.font1'
-                );
-                if (target1) {
-                    target1.textContent = `Hello, ${state.value}!`;
-                }
-                // const target2 = document.getElementById("Parent.div1.div2.font2");
-                // ...
-            })
-        );
+        this.states.name = new State('World', (val) => {
+            let target;
+            this.states.name.value = val;
+            // for every dependent element, update respective attribute or content
+            if ((target = document.getElementById('Parent.div1.div2.font1'))) {
+                target.textContent = `Hello, ${this.states.name.value}!`;
+            }
+            if ((target = document.getElementById('Parent.div1.div2.Child1.font1'))) {
+                target.textContent = `Child test: ${this.states.name.value}`;
+            }
+            if ((target = document.getElementById('Parent.div1.div2.Child1.font2'))) {
+                target.textContent = `Child test: ${this.states.name.value}`;
+            }
+            if ((target = document.getElementById('Parent.div1.div2.Child1.font3'))) {
+                target.textContent = `Child test: ${this.states.name.value}`;
+            }
+        });
 
         // section 3: content init: uses states defined above
         const root = document.createElement('div');
         {
-            const name = _context_.states.get('name')?.value;
             root.innerHTML = `
                 <div attr1="value1" attr2="value2">
                   <div attr3="value3" attr4="value4">
-                    <font id="Parent.div1.div2.font1" attr5="value5" attr6="value6">Hello, ${name}!</font><br/>
-                    ${(function () {
-                        const child1 = new Child({
-                            name: _context_.states.get('name') || State.default(),
+                    <font id="Parent.div1.div2.font1" attr5="value5" attr6="value6">Hello, ${this.states.name.value}!</font><br/>
+                    ${(() => {
+                        const child = new Child({
+                            name: this.states.name,
+                            child: new State(
+                                `
+                                <font id="Parent.div1.div2.Child1.font1" attr7="value7" attr8="value8">Child test: ${this.states.name.value}</font><br/>
+                                <font id="Parent.div1.div2.Child1.font2" attr9="value9" attr10="value10">Child test: ${this.states.name.value}</font><br/>
+                                <font id="Parent.div1.div2.Child1.font3" attr11="value11" attr12="value12">Child test: ${this.states.name.value}</font>`,
+                                () => {}
+                            ),
                         });
-                        _context_.addChild(child1);
-                        return child1.getHTML();
+                        this.addChild(child);
+                        return child.getHTML();
                     })()}
                   </div>
                 </div>
@@ -82,15 +82,13 @@ export default class Parent {
 
         // section 4: elements added to the elements array
         for (const node of root.children) {
-            _context_.elements.push(node);
+            this.elements.push(node);
         }
     }
 
     getHTML() {
-        const _context_ = this;
-
         let html = '';
-        for (const element of _context_.elements) {
+        for (const element of this.elements) {
             html += element.outerHTML;
         }
         return html;
@@ -101,33 +99,27 @@ export default class Parent {
      * @param {IComponent} child
      */
     addChild(child) {
-        const _context_ = this;
-
-        _context_.children.add(child);
+        this.children.add(child);
     }
 
     onMount() {
-        const _context_ = this;
-
         {
             // no other code present
         }
-
-        for (const child of _context_.children) {
+        // mount all children
+        for (const child of this.children) {
             child.onMount();
         }
     }
 
     onUnmount() {
-        const _context_ = this;
-
         // remove event listeners by cloning the node
-        for (let i = 0; i < _context_.elements.length; i++) {
-            const node = _context_.elements[i].cloneNode(true);
-            _context_.elements[i].replaceWith(node);
+        for (let i = 0; i < this.elements.length; i++) {
+            const node = this.elements[i].cloneNode(true);
+            this.elements[i].replaceWith(node);
         }
-
-        for (const child of _context_.children) {
+        // call onUnmount for all children
+        for (const child of this.children) {
             child.onUnmount();
         }
     }

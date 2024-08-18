@@ -1,10 +1,10 @@
 <script>
-   const {b1, b2, b3} = Y0.refs();
-   let {name} = Y0.props();
+   const { b1, b2, b3 } = Y0.refs();
+   let { child, name } = Y0.props();
    let age = 0;
 
    function changeName() {
-       name = "Alice";
+      name = "Alice";
    }
 
    function changeAge() {
@@ -21,8 +21,15 @@
    b3.addEventListener("click", changeBoth);
 </script>
 
-<font attr1="value1" attr2="value2">Hello, {name}!</font><br/>
-<font attr5="value5" attr6="value6">Age: {age}</font><br/>
+<style>
+   font {
+      color: red;
+   }
+</style>
+
+<font attr1="value1" attr2="value2">Hello, {name}!</font><br />
+<font attr5="value5" attr6="value6">Age: {age}</font><br />
+{child}<br />
 <button ref={b1}>Change Name</button>
 <button ref={b2}>Change Age</button>
 <button ref={b3}>Change Both</button>
